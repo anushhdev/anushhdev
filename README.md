@@ -47,7 +47,7 @@ You can click the Preview link to take a look at your changes.
 
 ### A Student & Developer  
 
-<img align="right" alt="GIF" src="code.gif" width="500" height="320" />
+<img align="right" alt="GIF" src="https://cdn.dribbble.com/users/1292677/screenshots/6139167/media/5387dc7e035b3efe9d94516044de66a4.gif" width="500" height="320" />
 
 #### Talking about my personal stuff:
 
