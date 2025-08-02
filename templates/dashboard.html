@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FortiGate Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: '#2563eb',
+              accent: '#14b8a6',
+              surface: '#1e293b',
+              card: '#334155',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+
+<body class="dark bg-surface min-h-screen">
+<div class="max-w-2xl mx-auto py-6 px-2">
+    <div class="text-center mb-6">
+        <h1 class="text-3xl font-bold text-primary mb-2">FortiGate Firewall Dashboard</h1>
+        <p class="text-accent text-lg">Policy Lookup &amp; Network Tools</p>
+        <button id="toggleDark" class="mt-2 px-3 py-1 rounded bg-card text-white">Toggle Dark/Light</button>
+    </div>
+    <div class="bg-card rounded-xl shadow-lg p-4">
+        <div class="flex flex-col md:flex-row gap-2 mb-4">
+            <button class="tab-btn px-4 py-2 rounded-t-lg font-semibold text-white bg-primary" id="policy-tab" onclick="showTab('policy')">Policy Lookup</button>
+            <button class="tab-btn px-4 py-2 rounded-t-lg font-semibold text-white bg-accent" id="traceroute-tab" onclick="showTab('traceroute')">Traceroute Console</button>
+        </div>
+        <div id="policy" class="tab-content">
+            <form method="post" action="/" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div>
+                    <label for="firewall" class="block text-sm font-medium text-white mb-1">Select Firewall</label>
+                    <select name="firewall" id="firewall" class="w-full rounded bg-surface text-white p-2" required>
+                        {% for fw in firewalls %}
+                        <option value="{{ fw }}">{{ fw }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="src" class="block text-sm font-medium text-white mb-1">Source IP</label>
+                    <input type="text" name="src" id="src" class="w-full rounded bg-surface text-white p-2" required>
+                </div>
+                <div>
+                    <label for="dst" class="block text-sm font-medium text-white mb-1">Destination IP</label>
+                    <input type="text" name="dst" id="dst" class="w-full rounded bg-surface text-white p-2" required>
+                </div>
+                <div>
+                    <label for="port" class="block text-sm font-medium text-white mb-1">Port</label>
+                    <input type="text" name="port" id="port" class="w-full rounded bg-surface text-white p-2" required>
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full rounded bg-primary text-white py-2 font-bold">Lookup</button>
+                </div>
+            </form>
+            {% if result %}
+            <div class="bg-surface rounded mt-4 p-4">
+                <h5 class="text-accent font-bold mb-2">Policy Lookup Result:</h5>
+                <pre class="text-white">{{ result }}</pre>
+            </div>
+            {% endif %}
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="bg-red-700 text-white rounded mt-4 p-2">
+                  {% for message in messages %}
+                    <div>{{ message }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+        </div>
+        <div id="traceroute" class="tab-content hidden">
+            <form method="post" action="/traceroute" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div class="md:col-span-2">
+                    <label for="tr_fw" class="block text-sm font-medium text-white mb-1">Select Firewall</label>
+                    <select name="firewall" id="tr_fw" class="w-full rounded bg-surface text-white p-2" required>
+                        {% for fw in firewalls %}
+                        <option value="{{ fw }}">{{ fw }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label for="tr_dst" class="block text-sm font-medium text-white mb-1">Destination IP/Hostname</label>
+                    <input type="text" name="dst" id="tr_dst" class="w-full rounded bg-surface text-white p-2" required>
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full rounded bg-accent text-white py-2 font-bold">Traceroute</button>
+                </div>
+            </form>
+            {% if traceroute_result %}
+            <div class="bg-surface rounded mt-4 p-4">
+                <h5 class="text-accent font-bold mb-2">Traceroute Output:</h5>
+                <div class="console-output">{{ traceroute_result|safe }}</div>
+            </div>
+            {% endif %}
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="bg-red-700 text-white rounded mt-4 p-2">
+                  {% for message in messages %}
+                    <div>{{ message }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+</div>
+<script>
+    // Tab switching logic
+    function showTab(tab) {
+        document.getElementById('policy').classList.add('hidden');
+        document.getElementById('traceroute').classList.add('hidden');
+        document.getElementById(tab).classList.remove('hidden');
+        document.getElementById('policy-tab').classList.remove('bg-accent');
+        document.getElementById('traceroute-tab').classList.remove('bg-primary');
+        if(tab === 'policy') {
+            document.getElementById('policy-tab').classList.add('bg-primary');
+            document.getElementById('traceroute-tab').classList.add('bg-accent');
+        } else {
+            document.getElementById('policy-tab').classList.add('bg-accent');
+            document.getElementById('traceroute-tab').classList.add('bg-primary');
+        }
+    }
+    // Default tab
+    showTab('policy');
+    // Dark mode toggle
+    document.getElementById('toggleDark').onclick = function() {
+        document.body.classList.toggle('dark');
+    }
+</script>
+</body>
+</html>
